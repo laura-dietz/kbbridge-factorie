@@ -24,7 +24,7 @@ object Document2DoubleTabRenderer {
     val emty = tokens.head.entry
     val mentions =
       if(doc.attr[WikiEntityMentions] != null){
-        for(linkedMention <- doc.attr[WikiEntityMentions]) yield Span(linkedMention.phrase.headToken.stringStart, linkedMention.phrase.last.stringEnd, linkedMention)
+        for(linkedMention <- doc.attr[WikiEntityMentions]) yield Span(linkedMention.phrase.head.stringStart, linkedMention.phrase.last.stringEnd, linkedMention)
       } else Seq.empty
     val merged = MergeBuffers.mergeBuffers(emty, tokens,mentions, Seq[Null]())
 
@@ -50,7 +50,7 @@ object Document2DoubleTabRenderer {
 
       if(isStartOfSentence) result += ""
 
-      val line = Seq(surface, partofspeech,parseTree, nerType, "$charBegin\t$charEnd", entityphrase, mentionLen, wikititles.mkString("\t"), entityScores.mkString("\t"))
+      val line = Seq(surface, partofspeech,parseTree, nerType, s"$charBegin\t$charEnd", entityphrase, mentionLen, wikititles.mkString("\t"), entityScores.mkString("\t"))
       result += line.mkString("\t\t")
     }
 
