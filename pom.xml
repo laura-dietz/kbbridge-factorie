@@ -10,6 +10,7 @@
     <maven.compiler.target>1.6</maven.compiler.target>
     <encoding>UTF-8</encoding>
     <scala.version>2.10.2</scala.version>
+    <strepsi.version>1.5-SNAPSHOT</strepsi.version>
   </properties>
 
   <repositories>
@@ -83,6 +84,20 @@
       <artifactId>kbbridge</artifactId>
       <version>0.2</version>
     </dependency>
+
+    <dependency>
+    <groupId>edu.umass.ciir</groupId>
+    <artifactId>strepsitools</artifactId>
+    <!--<properties>-->
+      <!--<scala.version>2.11.6</scala.version>-->
+      <!--<javaVersion>1.6</javaVersion>-->
+<!---->
+      <!--<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+    <!--</properties>-->
+    <version>s${scala.version}-${strepsi.version}</version>
+    </dependency>
+
+
 
     <dependency>
       <groupId>org.scala-lang</groupId>

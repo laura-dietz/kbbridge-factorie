@@ -1,6 +1,6 @@
 package cc.factorie.app.nlp.el
 
-import java.io.{File, FileInputStream, InputStream}
+import java.io._
 
 import cc.factorie.app.nlp._
 import cc.factorie.app.nlp.ner.NoEmbeddingsConllStackedChainNer
@@ -14,7 +14,7 @@ import org.xml.sax.InputSource
 import scala.io.Source
 import scala.xml.parsing.ConstructingParser
 import scala.xml.pull.{EvElemEnd, EvElemStart, EvText, XMLEventReader}
-import scala.xml.{Node, NodeSeq, XML}
+import scala.xml.{Node, NodeSeq}
 
 object BaseEntityLinkingPipeline extends App with Logging {
 
@@ -22,9 +22,10 @@ object BaseEntityLinkingPipeline extends App with Logging {
 
   val testMode = true
 
-  if(args.length<3) throw new RuntimeException("Usage: LinkingAnnotatorMain $docId1,$docId2,$docId3 $index $outputDir")
+  if(args.length<3) throw new RuntimeException("Usage: LinkingAnnotatorMain $docId1,$docId2,$docId3 $index $outputXmlDir $outputDoubleTabDir")
   var dirpaths: Seq[String] = args(0).split(",").toSeq
-  val outputDir: File = new File(args(2))
+  val xmlDir: File = new File(args(2))
+  val doubleTabDir: File = new File(args(3))
 
   val docpaths = {
     val docpaths2 =
@@ -37,8 +38,11 @@ object BaseEntityLinkingPipeline extends App with Logging {
   }
 
   //outputDir = new File(args(2))
-  if (!outputDir.exists()) {
-    outputDir.mkdirs()
+  if (!xmlDir.exists()) {
+    xmlDir.mkdirs()
+  }
+  if (!doubleTabDir.exists()) {
+    doubleTabDir.mkdirs()
   }
 
   println("docs to annotate: " + docpaths.size)
@@ -90,9 +94,10 @@ object BaseEntityLinkingPipeline extends App with Logging {
 
     for (docpath <- docs) {
       val docId = scala.reflect.io.File(docpath).name
-      val outputFile = new File(outputDir.getAbsolutePath + File.separator + docId + ".xml")
+      val outputXmlFile = new File(xmlDir.getAbsolutePath + File.separator + docId + ".xml")
+      val outputDoubleTabFile = new File(doubleTabDir.getAbsolutePath + File.separator + docId + ".tsv")
 
-      if (testMode || !outputFile.exists()) {
+      if (testMode || !outputXmlFile.exists() || !outputDoubleTabFile.exists()) {
         try {
 
           //        if (gDoc == null) {
@@ -129,10 +134,14 @@ object BaseEntityLinkingPipeline extends App with Logging {
           println("Processed %d tokens.".format(doc1.tokenCount))
           println(doc1.owplString(nlpSteps.map(p => p.tokenAnnotationString(_))))
 
-          val xml = Document2XmlRenderer.xml(doc1)
-          //println(xml.toString)
+//          val xml = Document2XmlRenderer.xml(doc1)
+//          XML.save(outputXmlFile.getAbsolutePath, xml, "UTF-8")
+          
+          val doubletab = Document2DoubleTabRenderer.doubleTab(doc1)
+          val doubletabwriter = new PrintWriter(outputDoubleTabFile, "UTF-8")
+          doubletab.foreach(doubletabwriter.println)
+          doubletabwriter.close()
 
-          XML.save(outputFile.getAbsolutePath, xml, "UTF-8")
         }catch {
           case ex: Exception => {
             ex.printStackTrace(System.err)
@@ -155,7 +164,7 @@ object BaseEntityLinkingPipeline extends App with Logging {
   def workTodo(docs: Seq[String]): Boolean = {
     var workTodo = false
     for (docId <- docs) {
-      val outputFile = new File(outputDir.getAbsolutePath + File.separator + docId + ".xml")
+      val outputFile = new File(xmlDir.getAbsolutePath + File.separator + docId + ".xml")
       if (!outputFile.exists()) {
         workTodo = true
       }
