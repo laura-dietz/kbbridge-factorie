@@ -24,8 +24,18 @@ object BaseEntityLinkingPipeline extends App with Logging {
   val testMode = true
 
   if(args.length<3) throw new RuntimeException("Usage: LinkingAnnotatorMain $docId1,$docId2,$docId3 $index $outputDir")
-  var docpaths: Seq[String] = args(0).split(",").toSeq
+  var dirpaths: Seq[String] = args(0).split(",").toSeq
   val outputDir: File = new File(args(2))
+
+  val docpaths = {
+    val docpaths2 =
+      for (dirname <- dirpaths) yield {
+        val dir = scala.reflect.io.Directory(dirname)
+        if(dir.isDirectory) dir.deepList().map(_.path)
+        else Seq(dirname)
+      }
+    docpaths2.flatten
+  }
 
   //outputDir = new File(args(2))
   if (!outputDir.exists()) {
