@@ -20,17 +20,20 @@ object Document2DoubleTabRenderer {
 
 
   def doubleTab(doc: Document):Seq[String] = {
-    val tokens =   for (section <- doc.sections; token <- section.tokens) yield Span(token.stringStart, token.stringEnd, token)
-    val emty = tokens.head.entry
-    val mentions =
-      if(doc.attr[WikiEntityMentions] != null){
-        for(linkedMention <- doc.attr[WikiEntityMentions]) yield Span(linkedMention.phrase.head.stringStart, linkedMention.phrase.last.stringEnd, linkedMention)
-      } else Seq.empty
-    val merged = MergeBuffers.mergeBuffers(emty, tokens,mentions, Seq[Null]())
+    val mergedTokensAnnotations = {
+      val tokens =   for (section <- doc.sections; token <- section.tokens) yield Span(token.stringStart, token.stringEnd, token)
+      val emty = tokens.head.entry
+      val mentions =
+        if(doc.attr[WikiEntityMentions] != null){
+          for(linkedMention <- doc.attr[WikiEntityMentions]) yield Span(linkedMention.phrase.head.stringStart, linkedMention.phrase.last.stringEnd, linkedMention)
+        } else Seq.empty
+
+      MergeBuffers.mergeBuffers(emty, tokens,mentions.sortBy(_.spanBegin), Seq[Null]())
+    }
 
     val result = new ListBuffer[String]()
 
-    for(Tuple3(token, mentions, _) <- merged) yield {
+    for(Tuple3(token, mentions, _) <- mergedTokensAnnotations) yield {
       val tokenId = token.position + 1
       val surface = token.position+"_"+token.string
       val partofspeech = getAttr(token, OntonotesForwardPosTagger.tokenAnnotationString)
