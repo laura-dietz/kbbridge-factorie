@@ -32,7 +32,7 @@ object Document2DoubleTabRenderer {
 
     for(Tuple3(token, mentions, _) <- merged) yield {
       val tokenId = token.position + 1
-      val surface = token.string
+      val surface = token.position+"_"+token.string
       val partofspeech = getAttr(token, OntonotesForwardPosTagger.tokenAnnotationString)
       val charBegin = token.stringStart
       val charEnd = token.stringEnd
@@ -41,9 +41,9 @@ object Document2DoubleTabRenderer {
       val parseTree = getAttr(token, OntonotesTransitionBasedParser.tokenAnnotationString)
 
 
-      val entityphrase = mentions.map(_.phrase.string).mkString("\t")
+      val entityphrase = mentions.map(x => x.phrase.string+"_"+x.phrase.head.position+"_"+x.phrase.head.stringStart+"_"+x.phrase.last.stringEnd).mkString("\t")
       val mentionLen = mentions.map(_.phrase.tokens.size).mkString("\t")
-      val wikititlesScore = mentions.flatMap(_.entityLinks.take(5).map(x => x.wikipediaTitle -> x.score))
+      val wikititlesScore = mentions.flatMap(_.entityLinks.take(1).map(x => x.wikipediaTitle -> x.score))
       val (wikititles, entityScores) = wikititlesScore.unzip
 
       // todo categories
